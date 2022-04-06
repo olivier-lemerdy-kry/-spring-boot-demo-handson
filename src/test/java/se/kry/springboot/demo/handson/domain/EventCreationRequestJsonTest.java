@@ -35,11 +35,20 @@ class EventCreationRequestJsonTest {
 
   @Test
   void deserialize() throws IOException {
+    var zoneId = ZoneId.of("UTC");
+    var start = LocalDate.of(2001, Month.JANUARY, 1)
+        .atTime(LocalTime.MIDNIGHT)
+        .atZone(zoneId);
+    var end = LocalDate.of(2001, Month.JANUARY, 1)
+        .atTime(LocalTime.NOON)
+        .atZone(zoneId);
+
     var event = jacksonTester.readObject("EventCreationRequest.json");
+
     assertThat(event).isNotNull();
     assertThat(event.title()).isEqualTo("Some event");
-    assertThat(event.start()).hasToString("2001-01-01T00:00:00Z");
-    assertThat(event.end()).hasToString("2001-01-01T12:00:00Z");
+    assertThat(event.start()).isEqualTo(start);
+    assertThat(event.end()).isEqualTo(end);
   }
 
 }

@@ -7,9 +7,13 @@ import java.util.UUID;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 @Entity
+@Accessors(chain = true)
+@Getter
 public class Event extends AbstractPersistable<UUID> {
 
   @NotBlank
