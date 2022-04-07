@@ -23,8 +23,7 @@ public class EventService {
 
   @Transactional
   public Event createEvent(@NotNull EventCreationRequest eventCreationRequest) {
-    var event = Event.from(eventCreationRequest.title(), eventCreationRequest.start(), eventCreationRequest.end());
-    return repository.save(event);
+    return repository.save(newEventFromCreationRequest(eventCreationRequest));
   }
 
   public Page<Event> getEvents(@NotNull Pageable pageable) {
@@ -36,12 +35,27 @@ public class EventService {
   }
 
   public Event updateEvent(@NotNull UUID id, @NotNull EventUpdateRequest eventUpdateRequest) {
-    var event = getEvent(id).orElseThrow();
-    return event;
+    return getEvent(id)
+        .map(event -> updateEventFromUpdateRequest(event, eventUpdateRequest))
+        .orElseThrow(); // TODO Throw an actual exception
   }
 
   @Transactional
   public void deleteEvent(UUID id) {
     repository.deleteById(id);
+  }
+
+  private Event newEventFromCreationRequest(@NotNull EventCreationRequest eventCreationRequest) {
+    return new Event()
+        .setTitle(eventCreationRequest.title())
+        .setStart(eventCreationRequest.start())
+        .setEnd(eventCreationRequest.end());
+  }
+
+  private Event updateEventFromUpdateRequest(@NotNull Event event, @NotNull EventUpdateRequest eventUpdateRequest) {
+    eventUpdateRequest.title().ifPresent(event::setTitle);
+    eventUpdateRequest.start().ifPresent(event::setStart);
+    eventUpdateRequest.end().ifPresent(event::setEnd);
+    return event;
   }
 }

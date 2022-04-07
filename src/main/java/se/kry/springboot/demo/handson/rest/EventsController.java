@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import se.kry.springboot.demo.handson.domain.EventCreationRequest;
 import se.kry.springboot.demo.handson.data.Event;
+import se.kry.springboot.demo.handson.domain.EventCreationRequest;
+import se.kry.springboot.demo.handson.domain.EventUpdateRequest;
 import se.kry.springboot.demo.handson.services.EventService;
 
 @RestController
@@ -45,8 +46,8 @@ public class EventsController {
   }
 
   @PatchMapping("{id}")
-  void updateEvent(@PathVariable UUID id) {
-
+  Event updateEvent(@PathVariable UUID id, @RequestBody EventUpdateRequest eventUpdateRequest) {
+    return service.updateEvent(id, eventUpdateRequest);
   }
 
   @DeleteMapping("{id}")

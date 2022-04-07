@@ -27,6 +27,8 @@ import se.kry.springboot.demo.handson.services.EventService;
 @WebMvcTest(EventsController.class)
 class EventsControllerTest {
 
+  private static final ZoneId UTC = ZoneId.of("UTC");
+
   @Autowired
   private MockMvc mockMvc;
 
@@ -36,10 +38,11 @@ class EventsControllerTest {
   @Test
   void create_event() throws Exception {
     var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(
-        LocalTime.MIDNIGHT).atZone(ZoneId.of("UTC"));
+        LocalTime.MIDNIGHT).atZone(UTC);
     var end = start.plusHours(12);
+
     when(service.createEvent(any())).thenReturn(
-        Event.from("Some event", start, end));
+        new Event().setTitle("Some event").setStart(start).setEnd(end));
 
 
     mockMvc.perform(post("/api/v1/events")
@@ -65,7 +68,7 @@ class EventsControllerTest {
         LocalTime.MIDNIGHT).atZone(ZoneId.of("UTC"));
     var end = start.plusHours(12);
 
-    when(service.getEvent(uuid)).thenReturn(Optional.of(Event.from("Some event", start, end)));
+    when(service.getEvent(uuid)).thenReturn(Optional.of(new Event().setTitle("Some event").setStart(start).setEnd(end)));
 
     mockMvc.perform(get("/api/v1/events/{id}", uuid))
         .andExpect(status().isOk())

@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -14,6 +15,8 @@ import org.springframework.boot.test.json.JacksonTester;
 
 @JsonTest
 class EventUpdateRequestJsonTest {
+
+  private static final ZoneId UTC = ZoneId.of("UTC");
 
   @Autowired
   private JacksonTester<EventUpdateRequest> jacksonTester;
@@ -29,14 +32,23 @@ class EventUpdateRequestJsonTest {
   }
 
   @Test
-  void deserialize() throws Exception {
-    var zoneId = ZoneId.of("UTC");
+  void serialize_empty() throws IOException {
+    var eventUpdateRequest = new EventUpdateRequest(Optional.empty(), Optional.empty(), Optional.empty());
+
+    var jsonContent = jacksonTester.write(eventUpdateRequest);
+
+    assertThat(jsonContent)
+        .hasEmptyJsonPathValue("$.title")
+        .hasEmptyJsonPathValue("$.start")
+        .hasEmptyJsonPathValue("$.end");
+  }
+
+  @Test
+  void deserialize() throws IOException {
     var start = LocalDate.of(2001, Month.JANUARY, 1)
         .atTime(LocalTime.MIDNIGHT)
-        .atZone(zoneId);
-    var end = LocalDate.of(2001, Month.JANUARY, 1)
-        .atTime(LocalTime.NOON)
-        .atZone(zoneId);
+        .atZone(UTC);
+    var end = start.plusHours(12);
 
     var eventUpdateRequest = jacksonTester.readObject("EventUpdateRequest.json");
 
@@ -44,6 +56,19 @@ class EventUpdateRequestJsonTest {
     assertThat(eventUpdateRequest.title()).hasValue("Some event");
     assertThat(eventUpdateRequest.start()).hasValue(start);
     assertThat(eventUpdateRequest.end()).hasValue(end);
+  }
+
+  @Test
+  void serialize() throws IOException {
+    var start = LocalDate.of(2001, Month.JANUARY, 1)
+        .atTime(LocalTime.MIDNIGHT)
+        .atZone(UTC);
+    var end = start.plusHours(12);
+
+    var jsonContent =
+        jacksonTester.write(new EventUpdateRequest(Optional.of("Some event"), Optional.of(start), Optional.of(end)));
+
+    assertThat(jsonContent).isEqualToJson("EventUpdateRequest.json");
   }
 
 }
