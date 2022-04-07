@@ -41,12 +41,12 @@ public class EventsController {
   }
 
   @GetMapping("{id}")
-  Event readEvent(@PathVariable UUID id) {
-    return service.getEvent(id).orElseThrow();
+  Event readEvent(@PathVariable UUID id) throws EventNotFoundException {
+    return service.getEvent(id).orElseThrow(EventNotFoundException::new);
   }
 
   @PatchMapping("{id}")
-  Event updateEvent(@PathVariable UUID id, @RequestBody EventUpdateRequest eventUpdateRequest) {
+  Event updateEvent(@PathVariable UUID id, @Valid @RequestBody EventUpdateRequest eventUpdateRequest) {
     return service.updateEvent(id, eventUpdateRequest);
   }
 
