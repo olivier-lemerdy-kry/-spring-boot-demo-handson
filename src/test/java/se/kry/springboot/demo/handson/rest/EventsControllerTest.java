@@ -23,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import se.kry.springboot.demo.handson.data.Event;
+import se.kry.springboot.demo.handson.domain.EventUpdateRequest;
 import se.kry.springboot.demo.handson.services.EventService;
 
 @WebMvcTest(EventsController.class)
@@ -160,10 +161,17 @@ class EventsControllerTest {
         .put("title", "Some other event")
         .toString();
 
+    var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT);
+
+    when(service.updateEvent(uuid,
+        new EventUpdateRequest(Optional.of("Some other event"), Optional.empty(), Optional.empty())))
+        .thenReturn(Optional.of(new Event().setTitle("Some other event").setStart(start).setEnd(start.plusHours(12))));
+
     mockMvc.perform(patch("/api/v1/events/{id}", uuid)
             .contentType(MediaType.APPLICATION_JSON)
             .content(payload))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.title").value("Some other event"));
   }
 
   @Test
@@ -179,12 +187,28 @@ class EventsControllerTest {
   }
 
   @Test
+  void update_event_with_unknown_id() throws Exception {
+    var uuid = UUID.fromString("38a14a82-d5a2-4210-9d61-cc3577bfa5df");
+
+    var payload = objectMapper.createObjectNode()
+        .put("title", "Some other event")
+        .toString();
+
+    mockMvc.perform(patch("/api/v1/events/{id}", uuid)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(payload))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void update_event_with_too_long_title() throws Exception {
+    var uuid = UUID.fromString("38a14a82-d5a2-4210-9d61-cc3577bfa5df");
+
     var payload = objectMapper.createObjectNode()
         .put("title", "X".repeat(300))
         .toString();
 
-    mockMvc.perform(patch("/api/v1/events/{id}", "foobar")
+    mockMvc.perform(patch("/api/v1/events/{id}", uuid)
             .contentType(MediaType.APPLICATION_JSON)
             .content(payload))
         .andExpect(status().isBadRequest());
@@ -192,12 +216,14 @@ class EventsControllerTest {
 
   @Test
   void update_event_with_start_after_end() throws Exception {
+    var uuid = UUID.fromString("38a14a82-d5a2-4210-9d61-cc3577bfa5df");
+
     var payload = objectMapper.createObjectNode()
         .put("start", "2001-01-01T12:00:00")
         .put("end", "2001-01-01T00:00:00")
         .toString();
 
-    mockMvc.perform(patch("/api/v1/events/{id}", "foobar")
+    mockMvc.perform(patch("/api/v1/events/{id}", uuid)
             .contentType(MediaType.APPLICATION_JSON)
             .content(payload))
         .andExpect(status().isBadRequest());

@@ -46,8 +46,9 @@ public class EventsController {
   }
 
   @PatchMapping("{id}")
-  Event updateEvent(@PathVariable UUID id, @Valid @RequestBody EventUpdateRequest eventUpdateRequest) {
-    return service.updateEvent(id, eventUpdateRequest);
+  Event updateEvent(@PathVariable UUID id, @Valid @RequestBody EventUpdateRequest eventUpdateRequest)
+      throws EventNotFoundException {
+    return service.updateEvent(id, eventUpdateRequest).orElseThrow(EventNotFoundException::new);
   }
 
   @DeleteMapping("{id}")

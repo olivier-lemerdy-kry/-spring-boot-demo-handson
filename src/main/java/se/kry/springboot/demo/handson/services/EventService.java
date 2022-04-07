@@ -34,15 +34,14 @@ public class EventService {
     return repository.findById(id);
   }
 
-  public Event updateEvent(@NotNull UUID id, @NotNull EventUpdateRequest eventUpdateRequest) {
+  public Optional<Event> updateEvent(@NotNull UUID id, @NotNull EventUpdateRequest eventUpdateRequest) {
     return getEvent(id)
         .map(event -> updateEventFromUpdateRequest(event, eventUpdateRequest))
-        .map(repository::save)
-        .orElseThrow(); // TODO Throw an actual exception
+        .map(repository::save);
   }
 
   @Transactional
-  public void deleteEvent(UUID id) {
+  public void deleteEvent(@NotNull UUID id) {
     repository.deleteById(id);
   }
 
