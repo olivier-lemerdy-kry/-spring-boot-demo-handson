@@ -37,6 +37,7 @@ public class EventService {
   public Event updateEvent(@NotNull UUID id, @NotNull EventUpdateRequest eventUpdateRequest) {
     return getEvent(id)
         .map(event -> updateEventFromUpdateRequest(event, eventUpdateRequest))
+        .map(repository::save)
         .orElseThrow(); // TODO Throw an actual exception
   }
 

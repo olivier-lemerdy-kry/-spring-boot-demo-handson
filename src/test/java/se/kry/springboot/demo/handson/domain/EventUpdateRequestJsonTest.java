@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
-import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,6 @@ import org.springframework.boot.test.json.JacksonTester;
 
 @JsonTest
 class EventUpdateRequestJsonTest {
-
-  private static final ZoneId UTC = ZoneId.of("UTC");
 
   @Autowired
   private JacksonTester<EventUpdateRequest> jacksonTester;
@@ -46,14 +43,13 @@ class EventUpdateRequestJsonTest {
   @Test
   void deserialize() throws IOException {
     var start = LocalDate.of(2001, Month.JANUARY, 1)
-        .atTime(LocalTime.MIDNIGHT)
-        .atZone(UTC);
+        .atTime(LocalTime.MIDNIGHT).plusHours(1);
     var end = start.plusHours(12);
 
     var eventUpdateRequest = jacksonTester.readObject("EventUpdateRequest.json");
 
     assertThat(eventUpdateRequest).isNotNull();
-    assertThat(eventUpdateRequest.title()).hasValue("Some event");
+    assertThat(eventUpdateRequest.title()).hasValue("Some other event");
     assertThat(eventUpdateRequest.start()).hasValue(start);
     assertThat(eventUpdateRequest.end()).hasValue(end);
   }
@@ -61,12 +57,11 @@ class EventUpdateRequestJsonTest {
   @Test
   void serialize() throws IOException {
     var start = LocalDate.of(2001, Month.JANUARY, 1)
-        .atTime(LocalTime.MIDNIGHT)
-        .atZone(UTC);
+        .atTime(LocalTime.MIDNIGHT).plusHours(1);
     var end = start.plusHours(12);
 
     var jsonContent =
-        jacksonTester.write(new EventUpdateRequest(Optional.of("Some event"), Optional.of(start), Optional.of(end)));
+        jacksonTester.write(new EventUpdateRequest(Optional.of("Some other event"), Optional.of(start), Optional.of(end)));
 
     assertThat(jsonContent).isEqualToJson("EventUpdateRequest.json");
   }
