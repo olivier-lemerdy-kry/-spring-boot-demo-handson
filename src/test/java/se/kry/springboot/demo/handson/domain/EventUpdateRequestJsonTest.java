@@ -34,16 +34,12 @@ class EventUpdateRequestJsonTest {
 
     var jsonContent = jacksonTester.write(eventUpdateRequest);
 
-    assertThat(jsonContent)
-        .hasEmptyJsonPathValue("$.title")
-        .hasEmptyJsonPathValue("$.start")
-        .hasEmptyJsonPathValue("$.end");
+    assertThat(jsonContent).hasEmptyJsonPathValue("$.title").hasEmptyJsonPathValue("$.start").hasEmptyJsonPathValue("$.end");
   }
 
   @Test
   void deserialize() throws IOException {
-    var start = LocalDate.of(2001, Month.JANUARY, 1)
-        .atTime(LocalTime.MIDNIGHT).plusHours(1);
+    var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT).plusHours(1);
     var end = start.plusHours(12);
 
     var eventUpdateRequest = jacksonTester.readObject("EventUpdateRequest.json");
@@ -56,12 +52,10 @@ class EventUpdateRequestJsonTest {
 
   @Test
   void serialize() throws IOException {
-    var start = LocalDate.of(2001, Month.JANUARY, 1)
-        .atTime(LocalTime.MIDNIGHT).plusHours(1);
-    var end = start.plusHours(12);
+    var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT).plusHours(1);
 
-    var jsonContent =
-        jacksonTester.write(new EventUpdateRequest(Optional.of("Some other event"), Optional.of(start), Optional.of(end)));
+    var jsonContent = jacksonTester.write(
+        new EventUpdateRequest(Optional.of("Some other event"), Optional.of(start), Optional.of(start.plusHours(12))));
 
     assertThat(jsonContent).isEqualToJson("EventUpdateRequest.json");
   }

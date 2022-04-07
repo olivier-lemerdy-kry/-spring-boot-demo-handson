@@ -19,11 +19,9 @@ class EventCreationRequestJsonTest {
 
   @Test
   void serialize() throws IOException {
-    var start = LocalDate.of(2001, Month.JANUARY, 1)
-        .atTime(LocalTime.MIDNIGHT);
-    var end = start.plusHours(12);
+    var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT);
 
-    var jsonContent = jacksonTester.write(new EventCreationRequest("Some event", start, end));
+    var jsonContent = jacksonTester.write(new EventCreationRequest("Some event", start, start.plusHours(12)));
 
     assertThat(jsonContent).isEqualToJson("EventCreationRequest.json");
   }
