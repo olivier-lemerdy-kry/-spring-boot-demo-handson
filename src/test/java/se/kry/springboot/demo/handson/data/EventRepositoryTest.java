@@ -50,7 +50,7 @@ class EventRepositoryTest {
 
     IntStream.range(0, 50)
         .mapToObj(i -> new Event().setTitle("Event" + i).setStart(start.plusDays(i)).setEnd(start.plusDays(i).plusHours(12)))
-        .forEach(event -> entityManager.persist(event));
+        .forEach(entityManager::persist);
 
     var events = repository.findAll(Pageable.ofSize(20));
     assertThat(events).hasSize(20);
