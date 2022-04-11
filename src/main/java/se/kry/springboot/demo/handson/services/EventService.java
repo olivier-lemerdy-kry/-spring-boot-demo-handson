@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.kry.springboot.demo.handson.data.Event;
 import se.kry.springboot.demo.handson.data.EventRepository;
 import se.kry.springboot.demo.handson.domain.EventCreationRequest;
+import se.kry.springboot.demo.handson.domain.EventResponse;
 import se.kry.springboot.demo.handson.domain.EventUpdateRequest;
 
 @Service
@@ -22,22 +23,23 @@ public class EventService {
   }
 
   @Transactional
-  public Event createEvent(@NotNull EventCreationRequest eventCreationRequest) {
-    return repository.save(newEventFromCreationRequest(eventCreationRequest));
+  public EventResponse createEvent(@NotNull EventCreationRequest eventCreationRequest) {
+    return responseFromEvent(repository.save(newEventFromCreationRequest(eventCreationRequest)));
   }
 
-  public Page<Event> getEvents(@NotNull Pageable pageable) {
-    return repository.findAll(pageable);
+  public Page<EventResponse> getEvents(@NotNull Pageable pageable) {
+    return repository.findAll(pageable).map(this::responseFromEvent);
   }
 
-  public Optional<Event> getEvent(@NotNull UUID id) {
-    return repository.findById(id);
+  public Optional<EventResponse> getEvent(@NotNull UUID id) {
+    return repository.findById(id).map(this::responseFromEvent);
   }
 
-  public Optional<Event> updateEvent(@NotNull UUID id, @NotNull EventUpdateRequest eventUpdateRequest) {
-    return getEvent(id)
+  public Optional<EventResponse> updateEvent(@NotNull UUID id, @NotNull EventUpdateRequest eventUpdateRequest) {
+    return repository.findById(id)
         .map(event -> updateEventFromUpdateRequest(event, eventUpdateRequest))
-        .map(repository::save);
+        .map(repository::save)
+        .map(this::responseFromEvent);
   }
 
   @Transactional
@@ -57,5 +59,9 @@ public class EventService {
     eventUpdateRequest.start().ifPresent(event::setStart);
     eventUpdateRequest.end().ifPresent(event::setEnd);
     return event;
+  }
+
+  private EventResponse responseFromEvent(Event event) {
+    return new EventResponse(event.getId(), event.getTitle(), event.getStart(), event.getEnd());
   }
 }

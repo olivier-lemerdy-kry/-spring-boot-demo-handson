@@ -22,7 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import se.kry.springboot.demo.handson.data.Event;
+import se.kry.springboot.demo.handson.domain.EventResponse;
 import se.kry.springboot.demo.handson.domain.EventUpdateRequest;
 import se.kry.springboot.demo.handson.services.EventService;
 
@@ -40,11 +40,12 @@ class EventsControllerTest {
 
   @Test
   void create_event() throws Exception {
+    var uuid = UUID.fromString("38a14a82-d5a2-4210-9d61-cc3577bfa5df");
     var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT);
     var end = start.plusHours(12);
 
     when(service.createEvent(any())).thenReturn(
-        new Event().setTitle("Some event").setStart(start).setEnd(end));
+        new EventResponse(uuid, "Some event", start, end));
 
     var payload = objectMapper.createObjectNode()
         .put("title", "someEvent")
@@ -57,6 +58,7 @@ class EventsControllerTest {
             .content(payload))
         .andExpect(status().isCreated())
         .andExpectAll(
+            jsonPath("$.id").value("38a14a82-d5a2-4210-9d61-cc3577bfa5df"),
             jsonPath("$.title", is("Some event")),
             jsonPath("$.start", is("2001-01-01T00:00:00")),
             jsonPath("$.end", is("2001-01-01T12:00:00"))
@@ -140,11 +142,10 @@ class EventsControllerTest {
   @Test
   void read_event() throws Exception {
     var uuid = UUID.fromString("38a14a82-d5a2-4210-9d61-cc3577bfa5df");
-
     var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT);
-    var end = start.plusHours(12);
 
-    when(service.getEvent(uuid)).thenReturn(Optional.of(new Event().setTitle("Some event").setStart(start).setEnd(end)));
+    when(service.getEvent(uuid)).thenReturn(
+        Optional.of(new EventResponse(uuid, "Some event", start, start.plusHours(12))));
 
     mockMvc.perform(get("/api/v1/events/{id}", uuid))
         .andExpect(status().isOk())
@@ -165,7 +166,7 @@ class EventsControllerTest {
 
     when(service.updateEvent(uuid,
         new EventUpdateRequest(Optional.of("Some other event"), Optional.empty(), Optional.empty())))
-        .thenReturn(Optional.of(new Event().setTitle("Some other event").setStart(start).setEnd(start.plusHours(12))));
+        .thenReturn(Optional.of(new EventResponse(uuid, "Some other event", start, start.plusHours(12))));
 
     mockMvc.perform(patch("/api/v1/events/{id}", uuid)
             .contentType(MediaType.APPLICATION_JSON)
