@@ -1,6 +1,5 @@
 package se.kry.springboot.demo.handson.rest;
 
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -59,9 +58,9 @@ class EventsControllerTest {
         .andExpect(status().isCreated())
         .andExpectAll(
             jsonPath("$.id").value("38a14a82-d5a2-4210-9d61-cc3577bfa5df"),
-            jsonPath("$.title", is("Some event")),
-            jsonPath("$.start", is("2001-01-01T00:00:00")),
-            jsonPath("$.end", is("2001-01-01T12:00:00"))
+            jsonPath("$.title").value("Some event"),
+            jsonPath("$.start").value("2001-01-01T00:00:00"),
+            jsonPath("$.end").value("2001-01-01T12:00:00")
         );
   }
 
@@ -149,9 +148,9 @@ class EventsControllerTest {
 
     mockMvc.perform(get("/api/v1/events/{id}", uuid))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.title", is("Some event")))
-        .andExpect(jsonPath("$.start", is("2001-01-01T00:00:00")))
-        .andExpect(jsonPath("$.end", is("2001-01-01T12:00:00")));
+        .andExpect(jsonPath("$.title").value("Some event"))
+        .andExpect(jsonPath("$.start").value("2001-01-01T00:00:00"))
+        .andExpect(jsonPath("$.end").value("2001-01-01T12:00:00"));
   }
 
   @Test
