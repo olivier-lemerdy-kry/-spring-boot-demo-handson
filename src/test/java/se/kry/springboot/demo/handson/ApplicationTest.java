@@ -8,18 +8,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,14 +28,11 @@ import se.kry.springboot.demo.handson.data.EventRepository;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ApplicationTest {
 
-  @Value("classpath:se/kry/springboot/demo/handson/domain/EventCreationRequest.json")
-  private Resource eventCreationRequestJson;
-
-  @Value("classpath:se/kry/springboot/demo/handson/domain/EventUpdateRequest.json")
-  private Resource eventUpdateRequestJson;
-
   @Autowired
   private MockMvc mockMvc;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Autowired
   private EventRepository repository;
@@ -48,9 +42,15 @@ class ApplicationTest {
   void create_event() throws Exception {
     assertThat(repository.count()).isZero();
 
+    var payload = objectMapper.createObjectNode()
+        .put("title", "Some event")
+        .put("start", "2001-01-01T00:00:00")
+        .put("end", "2001-01-01T12:00:00")
+        .toString();
+
     mockMvc.perform(post("/api/v1/events")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(readJson(eventCreationRequestJson)))
+            .content(payload))
         .andExpect(status().isCreated())
         .andExpectAll(
             jsonPath("$.title").value("Some event"),
@@ -81,9 +81,15 @@ class ApplicationTest {
   void update_event() throws Exception {
     assertThat(repository.count()).isEqualTo(1);
 
+    var payload = objectMapper.createObjectNode()
+        .put("title", "Some other event")
+        .put("start", "2001-01-01T01:00:00")
+        .put("end", "2001-01-01T13:00:00")
+        .toString();
+
     mockMvc.perform(patch("/api/v1/events/{id}", findFirstEventId())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(readJson(eventUpdateRequestJson)))
+            .content(payload))
         .andExpectAll(
             jsonPath("$.title").value("Some other event"),
             jsonPath("$.start").value("2001-01-01T01:00:00"),
@@ -113,12 +119,6 @@ class ApplicationTest {
         .andExpect(status().isOk());
 
     assertThat(repository.count()).isZero();
-  }
-
-  private byte[] readJson(Resource resource) throws IOException {
-    try (InputStream json = resource.getInputStream()) {
-      return json.readAllBytes();
-    }
   }
 
   private UUID findFirstEventId() {
