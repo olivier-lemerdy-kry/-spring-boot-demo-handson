@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -41,14 +42,19 @@ public class EventsController {
   }
 
   @GetMapping("{id}")
-  EventResponse readEvent(@PathVariable UUID id) throws EventNotFoundException {
-    return service.getEvent(id).orElseThrow(EventNotFoundException::new);
+  ResponseEntity<EventResponse> readEvent(@PathVariable UUID id) {
+    return service.getEvent(id)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @PatchMapping("{id}")
-  EventResponse updateEvent(@PathVariable UUID id, @Valid @RequestBody EventUpdateRequest eventUpdateRequest)
-      throws EventNotFoundException {
-    return service.updateEvent(id, eventUpdateRequest).orElseThrow(EventNotFoundException::new);
+  ResponseEntity<EventResponse> updateEvent(
+      @PathVariable UUID id,
+      @Valid @RequestBody EventUpdateRequest eventUpdateRequest) {
+    return service.updateEvent(id, eventUpdateRequest)
+        .map(ResponseEntity::ok)
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @DeleteMapping("{id}")
