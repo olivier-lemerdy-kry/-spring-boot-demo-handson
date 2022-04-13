@@ -13,12 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import se.kry.springboot.demo.handson.domain.EventResponse;
@@ -134,17 +137,70 @@ class EventsControllerTest {
 
   @Test
   void read_events() throws Exception {
+    var uuid1 = UUID.fromString("38a14a82-d5a2-4210-9d61-cc3577bfa5df");
+    var start1 = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT);
+    var end1 = start1.plusHours(12);
+
+    var uuid2 = UUID.fromString("8ebea9a7-e0ef-4a62-a729-aff26134f9d8");
+    var start2 = start1.plusHours(1);
+    var end2 = end1.plusHours(1);
+
+    var content = List.of(
+        new EventResponse(uuid1, "Some event", start1, end1),
+        new EventResponse(uuid2, "Some other event", start2, end2)
+    );
+
+    var pageable = PageRequest.ofSize(20);
+
+    when(service.getEvents(pageable))
+        .thenReturn(new PageImpl<>(content, pageable, content.size()));
+
     mockMvc.perform(get("/api/v1/events"))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpectAll(
+            jsonPath("$").isMap(),
+            jsonPath("$.content").isArray(),
+            jsonPath("$.content[0].id").value("38a14a82-d5a2-4210-9d61-cc3577bfa5df"),
+            jsonPath("$.content[0].title").value("Some event"),
+            jsonPath("$.content[0].start").value("2001-01-01T00:00:00"),
+            jsonPath("$.content[0].end").value("2001-01-01T12:00:00"),
+            jsonPath("$.content[1].id").value("8ebea9a7-e0ef-4a62-a729-aff26134f9d8"),
+            jsonPath("$.content[1].title").value("Some other event"),
+            jsonPath("$.content[1].start").value("2001-01-01T01:00:00"),
+            jsonPath("$.content[1].end").value("2001-01-01T13:00:00"),
+            jsonPath("$.pageable").isMap(),
+            jsonPath("$.pageable.sort").isMap(),
+            jsonPath("$.pageable.sort.empty").value(true),
+            jsonPath("$.pageable.sort.unsorted").value(true),
+            jsonPath("$.pageable.sort.sorted").value(false),
+            jsonPath("$.pageable.offset").value(0),
+            jsonPath("$.pageable.pageNumber").value(0),
+            jsonPath("$.pageable.pageSize").value(20),
+            jsonPath("$.pageable.paged").value(true),
+            jsonPath("$.pageable.unpaged").value(false),
+            jsonPath("$.totalPages").value(1),
+            jsonPath("$.totalElements").value(2),
+            jsonPath("$.last").value(true),
+            jsonPath("$.size").value(20),
+            jsonPath("$.number").value(0),
+            jsonPath("$.sort").isMap(),
+            jsonPath("$.sort.empty").value(true),
+            jsonPath("$.sort.unsorted").value(true),
+            jsonPath("$.sort.sorted").value(false),
+            jsonPath("$.numberOfElements").value(2),
+            jsonPath("$.first").value(true),
+            jsonPath("$.empty").value(false)
+        );
   }
 
   @Test
   void read_event() throws Exception {
     var uuid = UUID.fromString("38a14a82-d5a2-4210-9d61-cc3577bfa5df");
     var start = LocalDate.of(2001, Month.JANUARY, 1).atTime(LocalTime.MIDNIGHT);
+    var end = start.plusHours(12);
 
     when(service.getEvent(uuid)).thenReturn(
-        Optional.of(new EventResponse(uuid, "Some event", start, start.plusHours(12))));
+        Optional.of(new EventResponse(uuid, "Some event", start, end)));
 
     mockMvc.perform(get("/api/v1/events/{id}", uuid))
         .andExpect(status().isOk())
