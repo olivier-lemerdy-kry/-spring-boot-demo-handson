@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,6 +60,8 @@ class EventsControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(payload))
         .andExpect(status().isCreated())
+        .andExpect(
+            header().string("Location", "http://localhost/events/38a14a82-d5a2-4210-9d61-cc3577bfa5df"))
         .andExpectAll(
             jsonPath("$.id").value("38a14a82-d5a2-4210-9d61-cc3577bfa5df"),
             jsonPath("$.title").value("Some event"),
