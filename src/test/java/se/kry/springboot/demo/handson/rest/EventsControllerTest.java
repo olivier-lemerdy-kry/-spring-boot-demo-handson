@@ -61,7 +61,7 @@ class EventsControllerTest {
             .content(payload))
         .andExpect(status().isCreated())
         .andExpect(
-            header().string("Location", "http://localhost/events/38a14a82-d5a2-4210-9d61-cc3577bfa5df"))
+            header().string("Location", "http://localhost/api/v1/events/38a14a82-d5a2-4210-9d61-cc3577bfa5df"))
         .andExpectAll(
             jsonPath("$.id").value("38a14a82-d5a2-4210-9d61-cc3577bfa5df"),
             jsonPath("$.title").value("Some event"),

@@ -33,7 +33,7 @@ public class EventsController {
   ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventCreationRequest eventCreationRequest,
                                             UriComponentsBuilder builder) {
     var event = service.createEvent(eventCreationRequest);
-    var location = builder.pathSegment("events", "{id}").build(event.id());
+    var location = builder.pathSegment("api", "v1", "events", "{id}").build(event.id());
     return ResponseEntity.created(location).body(event);
   }
 
