@@ -10,14 +10,13 @@ name: Docker Image Build with Gradle
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
-  build:
+  build-and-push-image:
 
     runs-on: ubuntu-latest
 
