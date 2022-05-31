@@ -1,5 +1,6 @@
 package se.kry.springboot.demo.handson.rest;
 
+import com.github.fge.jsonpatch.JsonPatch;
 import java.util.UUID;
 import javax.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -57,6 +58,14 @@ public class EventsController {
         .map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
+
+  @PatchMapping(path = "{id}", consumes = "application/json-patch+json")
+  ResponseEntity<EventResponse> updateEvent(
+      @PathVariable UUID id,
+      @RequestBody JsonPatch jsonPatch) {
+    return ResponseEntity.internalServerError().build();
+  }
+
 
   @DeleteMapping("{id}")
   void deleteEvent(@PathVariable UUID id) {
